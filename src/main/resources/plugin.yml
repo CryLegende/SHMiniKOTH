@@ -1,0 +1,16 @@
+name: SHMiniKOTH
+version: '${project.version}'
+main: org.Cry_Legende.sHMiniKOTH.SHMiniKOTH
+api-version: '1.20'
+author: Cry_Legende
+
+commands:
+  shminikoth:
+    description: Commande de configuration du plugin SHMiniKOTH (définition de la zone et de la plaque)
+    usage: /<command> setpos1|setpos2|setplate <valeur>
+    permission: shminikoth.admin
+
+permissions:
+  shminikoth.admin:
+    description: Permet d'utiliser les commandes administratives de SHMiniKOTH.
+    default: op
