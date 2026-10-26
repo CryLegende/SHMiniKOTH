@@ -14,6 +14,11 @@ public class KingPlaceholderExpansion extends PlaceholderExpansion {
     }
 
     @Override
+    public boolean persist() {
+        return true;
+    }
+
+    @Override
     public boolean canRegister() {
         return true;
     }

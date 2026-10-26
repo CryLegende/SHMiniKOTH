@@ -18,11 +18,18 @@ public class EventListener implements Listener {
     private final SHMiniKOTH plugin;
     private final KingManager kingManager;
     private final ZoneManager zoneManager;
+    // Lus une fois : ces événements (dégâts, durabilité) sont fréquents
+    private final boolean loseHealth;
+    private final boolean pvpEnabled;
+    private final boolean loseDurability;
 
     public EventListener(SHMiniKOTH plugin, KingManager kingManager, ZoneManager zoneManager) {
         this.plugin = plugin;
         this.kingManager = kingManager;
         this.zoneManager = zoneManager;
+        this.loseHealth = plugin.getConfig().getBoolean("features.lose_health", true);
+        this.pvpEnabled = plugin.getConfig().getBoolean("features.pvp", true);
+        this.loseDurability = plugin.getConfig().getBoolean("features.lose_durability", true);
     }
 
     @EventHandler
@@ -31,7 +38,7 @@ public class EventListener implements Listener {
         Block block = event.getClickedBlock();
         if (block == null) return;
         // Vérifier si le type de la plaque correspond à celle configurée
-        if (!block.getType().toString().equalsIgnoreCase(zoneManager.getPressurePlateType())) return;
+        if (block.getType() != zoneManager.getPressurePlateMaterial()) return;
         // Vérifier que le bloc est dans la zone définie
         if (!zoneManager.isInZone(block.getLocation())) return;
 
@@ -50,7 +57,7 @@ public class EventListener implements Listener {
         Player player = (Player) event.getEntity();
         if (!zoneManager.isInZone(player.getLocation())) return;
         // Si lose_health est désactivé, annuler tous les dégâts (non-PvP)
-        if (!plugin.getConfig().getBoolean("features.lose_health", true)) {
+        if (!loseHealth) {
             event.setCancelled(true);
         }
     }
@@ -60,8 +67,6 @@ public class EventListener implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         Player victim = (Player) event.getEntity();
         if (!zoneManager.isInZone(victim.getLocation())) return;
-        boolean pvpEnabled = plugin.getConfig().getBoolean("features.pvp", true);
-        boolean loseHealth = plugin.getConfig().getBoolean("features.lose_health", true);
         if (!pvpEnabled) {
             event.setCancelled(true);
         } else if (!loseHealth) {
@@ -74,7 +79,7 @@ public class EventListener implements Listener {
     public void onItemDamage(PlayerItemDamageEvent event) {
         Player player = event.getPlayer();
         if (!zoneManager.isInZone(player.getLocation())) return;
-        if (!plugin.getConfig().getBoolean("features.lose_durability", true)) {
+        if (!loseDurability) {
             event.setCancelled(true);
         }
     }

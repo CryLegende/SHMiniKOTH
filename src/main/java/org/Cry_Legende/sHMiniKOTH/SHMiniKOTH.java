@@ -2,9 +2,13 @@ package org.Cry_Legende.sHMiniKOTH;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Sound; // AJOUT
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.util.Locale;
 
 
 public class SHMiniKOTH extends JavaPlugin {
@@ -14,7 +18,8 @@ public class SHMiniKOTH extends JavaPlugin {
     private ZoneManager zoneManager;
     private BukkitTask rewardTask;
     private BukkitTask countdownSoundTask; // AJOUT
-    private long lastRewardTimeMillis;
+    private volatile long lastRewardTimeMillis;
+    private KingPlaceholderExpansion expansion;
 
     @Override
     public void onEnable() {
@@ -30,7 +35,8 @@ public class SHMiniKOTH extends JavaPlugin {
         startCountdownSoundTask(); // AJOUT
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new KingPlaceholderExpansion(this, kingManager).register();
+            expansion = new KingPlaceholderExpansion(this, kingManager);
+            expansion.register();
             getLogger().info("PlaceholderAPI détecté, expansion enregistrée.");
         } else {
             getLogger().warning("PlaceholderAPI non trouvé. Les placeholders ne fonctionneront pas.");
@@ -41,6 +47,11 @@ public class SHMiniKOTH extends JavaPlugin {
     public void onDisable() {
         if (rewardTask != null) rewardTask.cancel();
         if (countdownSoundTask != null) countdownSoundTask.cancel(); // AJOUT
+        // L'expansion persiste chez PlaceholderAPI : on la retire pour ne pas garder l'ancienne instance du plugin
+        if (expansion != null) {
+            expansion.unregister();
+            expansion = null;
+        }
         instance = null;
     }
 
@@ -62,7 +73,7 @@ public class SHMiniKOTH extends JavaPlugin {
 
     public void startRewardTask() {
         int intervalSeconds = getConfig().getInt("rewards.interval", 60);
-        int intervalTicks = intervalSeconds * 20;
+        int intervalTicks = Math.max(1, intervalSeconds) * 20;
         this.lastRewardTimeMillis = System.currentTimeMillis();
 
         rewardTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -85,6 +96,16 @@ public class SHMiniKOTH extends JavaPlugin {
             return; // Ne pas démarrer la tâche si la fonctionnalité est désactivée
         }
 
+        // Son lu une fois : un nom invalide était signalé à chaque seconde du compte à rebours
+        String soundName = getConfig().getString("rewards.countdown_sound.sound", "BLOCK_NOTE_BLOCK_HAT");
+        Sound sound = sound(soundName);
+        if (sound == null) {
+            getLogger().warning("Son configuré pour le compte à rebours KOTH invalide: " + soundName);
+            return;
+        }
+        float volume = (float) getConfig().getDouble("rewards.countdown_sound.volume", 1.0);
+        float pitch = (float) getConfig().getDouble("rewards.countdown_sound.pitch", 1.0);
+
         countdownSoundTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (kingManager.getCurrentKing() == null) {
                 return; // Pas de roi, pas de son
@@ -105,23 +126,27 @@ public class SHMiniKOTH extends JavaPlugin {
             int triggerSeconds = getConfig().getInt("rewards.countdown_sound.seconds_trigger", 3);
 
             if (remainingSeconds <= triggerSeconds && remainingSeconds > 0) {
-                try {
-                    String soundName = getConfig().getString("rewards.countdown_sound.sound", "BLOCK_NOTE_BLOCK_HAT");
-                    Sound sound = Sound.valueOf(soundName.toUpperCase());
-                    float volume = (float) getConfig().getDouble("rewards.countdown_sound.volume", 1.0);
-                    float pitch = (float) getConfig().getDouble("rewards.countdown_sound.pitch", 1.0);
-
-                    // Jouer le son au centre de la zone
-                    // Les joueurs proches l'entendront en fonction de la distance d'audition par défaut du son.
-                    center.getWorld().playSound(center, sound, volume, pitch);
-
-                } catch (IllegalArgumentException e) {
-                    getLogger().warning("Son configuré pour le compte à rebours KOTH invalide: " + getConfig().getString("rewards.countdown_sound.sound"));
-                    // Optionnel : désactiver la tâche ou la fonctionnalité pour éviter les spams de logs
-                    // if (countdownSoundTask != null) countdownSoundTask.cancel();
-                    // getConfig().set("rewards.countdown_sound.enabled", false);
-                }
+                // Jouer le son au centre de la zone
+                // Les joueurs proches l'entendront en fonction de la distance d'audition par défaut du son.
+                center.getWorld().playSound(center, sound, volume, pitch);
             }
         }, 0L, 20L); // Exécuter toutes les secondes (20 ticks)
+    }
+
+    /**
+     * Son lu en config : ancien nom (ENTITY_PLAYER_LEVELUP) ou clé (minecraft:entity.player.levelup).
+     */
+    static Sound sound(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        String s = raw.trim();
+        if (s.indexOf(':') >= 0 || s.indexOf('.') >= 0) {
+            NamespacedKey key = NamespacedKey.fromString(s.toLowerCase(Locale.ROOT));
+            return key == null ? null : Registry.SOUND_EVENT.get(key);
+        }
+        try {
+            return (Sound) Sound.class.getField(s.toUpperCase(Locale.ROOT)).get(null);
+        } catch (ReflectiveOperationException | ClassCastException e) {
+            return null;
+        }
     }
 }

@@ -11,9 +11,27 @@ import org.bukkit.entity.Player;
 
 public class ZoneManager {
 
+    /**
+     * Position de la zone : le monde reste un nom, car il peut ne pas être encore chargé au démarrage
+     * (PhantomWorlds). La résoudre dans onEnable donnait une zone morte, voire un plantage à la sauvegarde.
+     */
+    private record Pos(String world, double x, double y, double z) {
+        static Pos of(Location loc) {
+            return new Pos(loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+        }
+
+        Location toLocation() {
+            return new Location(Bukkit.getWorld(world), x, y, z);
+        }
+
+        String serialize() {
+            return world + "," + x + "," + y + "," + z;
+        }
+    }
+
     private final SHMiniKOTH plugin;
-    private Location pos1;
-    private Location pos2;
+    private Pos pos1;
+    private Pos pos2;
     private String pressurePlateTypeString;
     private Material pressurePlateMaterial;
 
@@ -25,49 +43,42 @@ public class ZoneManager {
     public void loadZone() {
         FileConfiguration config = plugin.getConfig();
         if (config.contains("zone.pos1") && config.contains("zone.pos2")) {
-            pos1 = parseLocation(config.getString("zone.pos1"));
-            pos2 = parseLocation(config.getString("zone.pos2"));
+            pos1 = parsePos(config.getString("zone.pos1"));
+            pos2 = parsePos(config.getString("zone.pos2"));
         }
-        setPressurePlateType(config.getString("zone.pressure_plate", "STONE_PRESSURE_PLATE"));
+        // Lecture seule : la configuration n'est pas réécrite au démarrage
+        applyPressurePlateType(config.getString("zone.pressure_plate", "STONE_PRESSURE_PLATE"));
     }
 
     public void saveZone() {
         FileConfiguration config = plugin.getConfig();
         if (pos1 != null && pos2 != null) {
-            config.set("zone.pos1", serializeLocation(pos1));
-            config.set("zone.pos2", serializeLocation(pos2));
+            config.set("zone.pos1", pos1.serialize());
+            config.set("zone.pos2", pos2.serialize());
         }
         config.set("zone.pressure_plate", pressurePlateTypeString);
         plugin.saveConfig();
     }
 
-    private Location parseLocation(String s) {
+    private Pos parsePos(String s) {
         try {
             String[] parts = s.split(",");
-            World world = Bukkit.getWorld(parts[0]);
-            double x = Double.parseDouble(parts[1]);
-            double y = Double.parseDouble(parts[2]);
-            double z = Double.parseDouble(parts[3]);
-            return new Location(world, x, y, z);
+            return new Pos(parts[0], Double.parseDouble(parts[1]), Double.parseDouble(parts[2]), Double.parseDouble(parts[3]));
         } catch (Exception e) {
             plugin.getLogger().severe("Erreur de parsing de la position: " + s);
             return null;
         }
     }
 
-    private String serializeLocation(Location loc) {
-        return loc.getWorld().getName() + "," + loc.getX() + "," + loc.getY() + "," + loc.getZ();
-    }
-
     public boolean isInZone(Location loc) {
-        if (pos1 == null || pos2 == null || loc == null || loc.getWorld() == null || !loc.getWorld().equals(pos1.getWorld()))
+        if (pos1 == null || pos2 == null || loc == null || loc.getWorld() == null || !loc.getWorld().getName().equals(pos1.world()))
             return false;
-        double minX = Math.min(pos1.getX(), pos2.getX());
-        double maxX = Math.max(pos1.getX(), pos2.getX());
-        double minY = Math.min(pos1.getY(), pos2.getY());
-        double maxY = Math.max(pos1.getY(), pos2.getY());
-        double minZ = Math.min(pos1.getZ(), pos2.getZ());
-        double maxZ = Math.max(pos1.getZ(), pos2.getZ());
+        double minX = Math.min(pos1.x(), pos2.x());
+        double maxX = Math.max(pos1.x(), pos2.x());
+        double minY = Math.min(pos1.y(), pos2.y());
+        double maxY = Math.max(pos1.y(), pos2.y());
+        double minZ = Math.min(pos1.z(), pos2.z());
+        double maxZ = Math.max(pos1.z(), pos2.z());
 
         double x = loc.getX();
         double y = loc.getY();
@@ -84,6 +95,13 @@ public class ZoneManager {
     }
 
     public void setPressurePlateType(String pressurePlateType) {
+        applyPressurePlateType(pressurePlateType);
+        if (plugin.isEnabled()) {
+            saveZone();
+        }
+    }
+
+    private void applyPressurePlateType(String pressurePlateType) {
         this.pressurePlateTypeString = pressurePlateType.toUpperCase();
         Material mat = Material.matchMaterial(this.pressurePlateTypeString);
         if (mat != null && mat.name().contains("PRESSURE_PLATE")) {
@@ -94,28 +112,25 @@ public class ZoneManager {
             plugin.getLogger().warning("Type de plaque de pression invalide: " + pressurePlateType + ". Utilisation de STONE_PRESSURE_PLATE par défaut.");
             this.pressurePlateTypeString = "STONE_PRESSURE_PLATE";
         }
-        if (plugin.isEnabled()) {
-            saveZone();
-        }
     }
 
 
     public void setPos1(Location loc) {
-        this.pos1 = loc;
+        this.pos1 = Pos.of(loc);
         saveZone();
     }
 
     public Location getPos1() { // AJOUT getter pour la logique du son
-        return pos1;
+        return pos1 == null ? null : pos1.toLocation();
     }
 
     public void setPos2(Location loc) {
-        this.pos2 = loc;
+        this.pos2 = Pos.of(loc);
         saveZone();
     }
 
     public Location getPos2() { // AJOUT getter pour la logique du son
-        return pos2;
+        return pos2 == null ? null : pos2.toLocation();
     }
 
     /**
@@ -128,16 +143,20 @@ public class ZoneManager {
             return null;
         }
         // S'assurer que les deux positions sont dans le même monde
-        if (!pos1.getWorld().equals(pos2.getWorld())) {
+        if (!pos1.world().equals(pos2.world())) {
             plugin.getLogger().warning("Les positions pos1 et pos2 du KOTH ne sont pas dans le même monde !");
             return null;
         }
+        World world = Bukkit.getWorld(pos1.world());
+        if (world == null) {
+            return null; // Monde pas encore chargé
+        }
 
-        double centerX = (pos1.getX() + pos2.getX()) / 2.0;
-        double centerY = (pos1.getY() + pos2.getY()) / 2.0; // Le milieu vertical de la zone
-        double centerZ = (pos1.getZ() + pos2.getZ()) / 2.0;
+        double centerX = (pos1.x() + pos2.x()) / 2.0;
+        double centerY = (pos1.y() + pos2.y()) / 2.0; // Le milieu vertical de la zone
+        double centerZ = (pos1.z() + pos2.z()) / 2.0;
 
-        return new Location(pos1.getWorld(), centerX, centerY, centerZ);
+        return new Location(world, centerX, centerY, centerZ);
     }
 
 
