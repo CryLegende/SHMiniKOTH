@@ -22,6 +22,14 @@ rewards:
     # Le son sera joué pour les X dernières secondes. Si 3, alors à 3s, 2s, 1s.
     seconds_trigger: 3
 
+# Commandes console exécutées à chaque seconde de règne (%player% = le roi). Liste vide = désactivé.
+# Sert au mini-tournoi « Roi du spawn » de SHFastTournament (type CUSTOM, objectif ROI) : 1 point par seconde.
+# require-in-zone : la seconde ne compte que si le roi est dans la zone (il garde la couronne en partant).
+reign:
+  require-in-zone: true
+  commands:
+  - shfasttournament:tournament custom ROI %player%
+
 messages:
   new_king: '&7&l« &e&lSH &8&l» &7&e%player% &7est le nouveau roi du spawn !'
   king_lost: '&7&l« &6&lSH &8&l» &7Vous n''êtes plus le roi du spawn, &6%player% &7vous

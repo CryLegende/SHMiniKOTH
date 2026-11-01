@@ -18,6 +18,7 @@ public class SHMiniKOTH extends JavaPlugin {
     private ZoneManager zoneManager;
     private BukkitTask rewardTask;
     private BukkitTask countdownSoundTask; // AJOUT
+    private BukkitTask reignTask;
     private volatile long lastRewardTimeMillis;
     private KingPlaceholderExpansion expansion;
 
@@ -33,6 +34,7 @@ public class SHMiniKOTH extends JavaPlugin {
 
         startRewardTask();
         startCountdownSoundTask(); // AJOUT
+        startReignTask();
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             expansion = new KingPlaceholderExpansion(this, kingManager);
@@ -47,6 +49,7 @@ public class SHMiniKOTH extends JavaPlugin {
     public void onDisable() {
         if (rewardTask != null) rewardTask.cancel();
         if (countdownSoundTask != null) countdownSoundTask.cancel(); // AJOUT
+        if (reignTask != null) reignTask.cancel();
         // L'expansion persiste chez PlaceholderAPI : on la retire pour ne pas garder l'ancienne instance du plugin
         if (expansion != null) {
             expansion.unregister();
@@ -88,6 +91,31 @@ public class SHMiniKOTH extends JavaPlugin {
             // donc le prochain "cycle" de récompense attendra qu'un roi soit là
             // et que l'intervalle complet soit écoulé depuis la *dernière récompense effective*.
         }, intervalTicks, intervalTicks);
+    }
+
+    /**
+     * Commandes console exécutées à chaque seconde de règne (section {@code reign}), par exemple pour compter
+     * les secondes du mini-tournoi « Roi du spawn ». Avec {@code require-in-zone}, une seconde ne compte que si
+     * le roi est dans la zone : il garde la couronne en partant, pas le compteur.
+     */
+    private void startReignTask() {
+        java.util.List<String> commands = getConfig().getStringList("reign.commands");
+        if (commands.isEmpty()) {
+            return;
+        }
+        boolean requireInZone = getConfig().getBoolean("reign.require-in-zone", true);
+        reignTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
+            org.bukkit.entity.Player king = kingManager.getCurrentKing();
+            if (king == null || !king.isOnline()) {
+                return;
+            }
+            if (requireInZone && !zoneManager.isInZone(king.getLocation())) {
+                return;
+            }
+            for (String cmd : commands) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", king.getName()));
+            }
+        }, 20L, 20L);
     }
 
     // NOUVELLE MÉTHODE POUR LA TÂCHE DU SON
