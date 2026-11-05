@@ -18,6 +18,10 @@ Mini King of the Hill au spawn : tenir la plaque rapporte des récompenses à in
 
 Utilisé sur : **Opale**.
 
+## Dépendances
+
+- Optionnelles : `PlaceholderAPI`, `SHLogs`
+
 ## Commandes
 
 | Commande | Alias | Description | Permission |
@@ -30,13 +34,18 @@ Utilisé sur : **Opale**.
 |---|---|---|
 | `shminikoth.admin` | Permet d'utiliser les commandes administratives de SHMiniKOTH. | `op` |
 
+## Logs
+
+Chaque récompense donnée au roi est écrite dans SHLogs, fichier `recompenses`. Le texte de la ligne se règle avec `rewards.log_format`. Sans SHLogs, la ligne est écrite dans la console.
+
 ## Configuration
 
 Fichiers par défaut repris du serveur (secrets remplacés par `CHANGE_ME`). Cliquez sur un fichier pour l'ouvrir :
 
 <pre>
 plugins/SHMiniKOTH/
-└── <a href="src/main/resources/config.yml">config.yml</a>
+├── <a href="src/main/resources/config.yml">config.yml</a>
+└── <a href="src/main/resources/messages.yml">messages.yml</a>
 </pre>
 
 ## Compilation

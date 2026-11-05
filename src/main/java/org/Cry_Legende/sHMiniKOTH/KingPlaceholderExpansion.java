@@ -35,8 +35,7 @@ public class KingPlaceholderExpansion extends PlaceholderExpansion {
 
     @Override
     public String getVersion() {
-        // Vous pouvez incrémenter la version si vous le souhaitez
-        return "1.2"; // Version incrémentée pour refléter le changement
+        return "1.2";
     }
 
     @Override
@@ -50,9 +49,9 @@ public class KingPlaceholderExpansion extends PlaceholderExpansion {
         } else if (identifier.equalsIgnoreCase("time")) {
             if (kingManager.getCurrentKing() != null) {
                 long elapsed = System.currentTimeMillis() - kingManager.getKingStartTime();
-                return formatDuration(elapsed, plugin.getConfig().getString("placeholder.king_time_format", "HH:mm:ss"));
+                return formatDuration(elapsed, plugin.getConfig().getString("placeholder.time_format", "HH:mm:ss"));
             } else {
-                return formatDuration(0, plugin.getConfig().getString("placeholder.king_time_format", "HH:mm:ss"));
+                return formatDuration(0, plugin.getConfig().getString("placeholder.time_format", "HH:mm:ss"));
             }
         } else if (identifier.equalsIgnoreCase("reward_countdown")) {
             if (kingManager.getCurrentKing() != null) {

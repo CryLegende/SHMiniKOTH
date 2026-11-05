@@ -1,7 +1,6 @@
 package org.Cry_Legende.sHMiniKOTH;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
 public class KingManager {
@@ -27,17 +26,16 @@ public class KingManager {
         currentKing = newKing;
         kingStartTime = System.currentTimeMillis();
         // Diffuser le message dans la zone
-        String message = plugin.getConfig().getString("messages.new_king", "&a%player% est le nouveau roi !");
-        message = message.replace("%player%", newKing.getName());
-        Component compMessage = LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+        Component compMessage = plugin.getMessages().get("new_king",
+                "&7&l« &e&lSH &8&l» &7&e%player% &7est le nouveau roi du spawn !", "%player%", newKing.getName());
         plugin.getServer().getOnlinePlayers().stream()
             .filter(p -> plugin.getZoneManager().isInZone(p.getLocation()))
             .forEach(p -> p.sendMessage(compMessage));
         // Envoyer le message king_lost à l'ancien roi seulement s'il n'est pas dans la zone
         if (oldKing != null && oldKing.isOnline() && !plugin.getZoneManager().isInZone(oldKing.getLocation())) {
-            String lostMessage = plugin.getConfig().getString("messages.king_lost", "&cVous n'êtes plus le roi, %player% vous a volé votre place !");
-            lostMessage = lostMessage.replace("%player%", newKing.getName());
-            oldKing.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(lostMessage));
+            oldKing.sendMessage(plugin.getMessages().get("king_lost",
+                    "&7&l« &6&lSH &8&l» &7Vous n'êtes plus le roi du spawn, &6%player% &7vous a volé votre place !",
+                    "%player%", newKing.getName()));
         }
     }
 

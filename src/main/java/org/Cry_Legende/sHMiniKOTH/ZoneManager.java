@@ -120,7 +120,7 @@ public class ZoneManager {
         saveZone();
     }
 
-    public Location getPos1() { // AJOUT getter pour la logique du son
+    public Location getPos1() {
         return pos1 == null ? null : pos1.toLocation();
     }
 
@@ -129,7 +129,7 @@ public class ZoneManager {
         saveZone();
     }
 
-    public Location getPos2() { // AJOUT getter pour la logique du son
+    public Location getPos2() {
         return pos2 == null ? null : pos2.toLocation();
     }
 

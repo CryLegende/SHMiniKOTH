@@ -1,19 +1,54 @@
+# ======================================================================== #
+#                      SHMiniKOTH - Configuration                          #
+# ======================================================================== #
+#
+# Plugin : mini King of the Hill au spawn. Le joueur qui marche sur la plaque
+# de pression de la zone devient le roi et reçoit des récompenses à intervalle
+# régulier. Les textes envoyés aux joueurs sont dans messages.yml.
+#
+# Commandes :
+#   /shminikoth setpos1                    Définit le premier coin de la zone à votre position.
+#   /shminikoth setpos2                    Définit le second coin de la zone à votre position.
+#   /shminikoth setplate <type_de_plaque>  Définit le type de plaque de pression.
+#
+# Permissions :
+#   shminikoth.admin   Utiliser /shminikoth (par défaut : op).
+#
+# Placeholders (PlaceholderAPI) :
+#   %shminikoth_king%              Nom du roi.
+#   %shminikoth_time%              Temps de règne du roi.
+#   %shminikoth_reward_countdown%  Temps restant avant la prochaine récompense.
+#
+# ======================================================================== #
+
+# Zone du KOTH : deux coins au format monde,x,y,z et type de la plaque de pression qui désigne le roi.
 zone:
   pos1: spawn,-17.698222597119873,71.50374533165873,32.19653921740691
   pos2: spawn,-9.45997789683911,78.62912365274993,40.54349821766487
   pressure_plate: POLISHED_BLACKSTONE_PRESSURE_PLATE
 
+# Règles appliquées dans la zone.
 features:
+  # false : les objets ne perdent pas de durabilité.
   lose_durability: false
+  # false : les dégâts entre joueurs sont annulés.
   pvp: true
+  # false : les joueurs ne perdent pas de vie.
   lose_health: false
 
+# Récompense du roi, donnée à intervalle régulier tant qu'il est roi.
 rewards:
+  # Commandes console exécutées à chaque récompense (%player% = le roi).
   commands:
-  - eco give %player% 100
-  - sm %player% &7&o(Récompense de roi du spawn)
-  - rc MiniKOTHdeco %player%
+    - eco give %player% 100
+    - sm %player% &7&o(Récompense de roi du spawn)
+    - rc MiniKOTHdeco %player%
+  # Secondes entre deux récompenses.
   interval: 60
+  # Ligne écrite dans SHLogs (fichier recompenses) à chaque récompense donnée.
+  # Variable : %player% (le roi). À accorder avec les commandes ci-dessus.
+  log_format: "%player% -> récompense du roi du spawn (100 SHCoins)"
+  # Son joué au centre de la zone avant chaque récompense.
   countdown_sound:
     enabled: true
     sound: BLOCK_NOTE_BLOCK_HAT
@@ -28,15 +63,15 @@ rewards:
 reign:
   require-in-zone: true
   commands:
-  - shfasttournament:tournament custom ROI %player%
+    - shfasttournament:tournament custom ROI %player%
 
-messages:
-  new_king: '&7&l« &e&lSH &8&l» &7&e%player% &7est le nouveau roi du spawn !'
-  king_lost: '&7&l« &6&lSH &8&l» &7Vous n''êtes plus le roi du spawn, &6%player% &7vous
-    a volé votre place !'
-
+# Valeurs renvoyées par les placeholders.
 placeholder:
+  # Texte de %shminikoth_king% quand il n'y a pas de roi.
   default_king: Personne
+  # Format de %shminikoth_time% (HH, mm, ss).
   time_format: HH:mm:ss
-  reward_countdown_format: mm:ss # Format pour %shminikoth_reward_countdown%
-  default_reward_countdown: N/A # Valeur si pas de roi pour le countdown
+  # Format de %shminikoth_reward_countdown% (HH, mm, ss).
+  reward_countdown_format: mm:ss
+  # Texte de %shminikoth_reward_countdown% quand il n'y a pas de roi.
+  default_reward_countdown: N/A

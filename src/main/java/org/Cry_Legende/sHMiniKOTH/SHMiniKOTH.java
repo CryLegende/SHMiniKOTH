@@ -4,7 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.bukkit.Sound; // AJOUT
+import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -17,15 +18,20 @@ public class SHMiniKOTH extends JavaPlugin {
     private KingManager kingManager;
     private ZoneManager zoneManager;
     private BukkitTask rewardTask;
-    private BukkitTask countdownSoundTask; // AJOUT
+    private BukkitTask countdownSoundTask;
     private BukkitTask reignTask;
     private volatile long lastRewardTimeMillis;
     private KingPlaceholderExpansion expansion;
+    private Messages messages;
+
+    /** Fichier de SHLogs où sont écrites les récompenses du roi. */
+    private static final String LOG_FILE = "recompenses";
 
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig(); // S'assure que les nouvelles options de config sont présentes
+        messages = new Messages(this);
         kingManager = new KingManager(this);
         zoneManager = new ZoneManager(this); // Doit être initialisé avant de l'utiliser dans les tâches
 
@@ -33,7 +39,7 @@ public class SHMiniKOTH extends JavaPlugin {
         getCommand("shminikoth").setExecutor(new CommandSHMiniKOTH(this, zoneManager));
 
         startRewardTask();
-        startCountdownSoundTask(); // AJOUT
+        startCountdownSoundTask();
         startReignTask();
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
@@ -48,7 +54,7 @@ public class SHMiniKOTH extends JavaPlugin {
     @Override
     public void onDisable() {
         if (rewardTask != null) rewardTask.cancel();
-        if (countdownSoundTask != null) countdownSoundTask.cancel(); // AJOUT
+        if (countdownSoundTask != null) countdownSoundTask.cancel();
         if (reignTask != null) reignTask.cancel();
         // L'expansion persiste chez PlaceholderAPI : on la retire pour ne pas garder l'ancienne instance du plugin
         if (expansion != null) {
@@ -70,6 +76,10 @@ public class SHMiniKOTH extends JavaPlugin {
         return zoneManager;
     }
 
+    public Messages getMessages() {
+        return messages;
+    }
+
     public long getLastRewardTimeMillis() {
         return lastRewardTimeMillis;
     }
@@ -80,10 +90,19 @@ public class SHMiniKOTH extends JavaPlugin {
         this.lastRewardTimeMillis = System.currentTimeMillis();
 
         rewardTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
-            if (kingManager.getCurrentKing() != null) {
+            Player king = kingManager.getCurrentKing();
+            if (king != null) {
+                boolean given = false;
                 for (String cmd : getConfig().getStringList("rewards.commands")) {
-                    String command = cmd.replace("%player%", kingManager.getCurrentKing().getName());
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                    String command = cmd.replace("%player%", king.getName());
+                    if (Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)) {
+                        given = true;
+                    }
+                }
+                if (given) {
+                    ActionLog.write(this, LOG_FILE, getConfig()
+                            .getString("rewards.log_format", "%player% -> récompense du roi du spawn")
+                            .replace("%player%", king.getName()));
                 }
                 this.lastRewardTimeMillis = System.currentTimeMillis();
             }
@@ -118,7 +137,7 @@ public class SHMiniKOTH extends JavaPlugin {
         }, 20L, 20L);
     }
 
-    // NOUVELLE MÉTHODE POUR LA TÂCHE DU SON
+    /** Joue un son au centre de la zone pendant les dernières secondes avant la récompense. */
     public void startCountdownSoundTask() {
         if (!getConfig().getBoolean("rewards.countdown_sound.enabled", false)) {
             return; // Ne pas démarrer la tâche si la fonctionnalité est désactivée

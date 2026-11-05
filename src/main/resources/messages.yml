@@ -1,0 +1,23 @@
+# ======================================================================== #
+#                      SHMiniKOTH - Messages                               #
+# ======================================================================== #
+#
+# Codes couleur avec '&'. Variables : %player%, %plate%.
+#
+# ======================================================================== #
+
+# Annonce dans la zone quand un joueur devient roi (%player% = le nouveau roi).
+new_king: "&7&l« &e&lSH &8&l» &7&e%player% &7est le nouveau roi du spawn !"
+
+# Message à l'ancien roi, hors de la zone (%player% = le nouveau roi).
+king_lost: "&7&l« &6&lSH &8&l» &7Vous n'êtes plus le roi du spawn, &6%player% &7vous a volé votre place !"
+
+# --- /shminikoth ---
+console_not_allowed: "&7&l« &c&lSH &8&l» &7Cette commande est uniquement utilisable par un &cjoueur&7."
+no_permission: "&7&l« &c&lSH &8&l» &7Vous n'avez pas la &cpermission &7d'utiliser cette commande."
+usage: "&7&l« &e&lSH &8&l» &7Usage : &e/shminikoth setpos1|setpos2|setplate <valeur>&7."
+usage_setplate: "&7&l« &e&lSH &8&l» &7Usage : &e/shminikoth setplate <type_de_plaque>&7."
+pos1_saved: "&7&l« &a&lSH &8&l» &7Position &a1 &7sauvegardée."
+pos2_saved: "&7&l« &a&lSH &8&l» &7Position &a2 &7sauvegardée."
+plate_set: "&7&l« &a&lSH &8&l» &7Type de plaque défini sur &a%plate%&7."
+unknown_command: "&7&l« &c&lSH &8&l» &7Commande &cinconnue&7."
