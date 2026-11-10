@@ -19,6 +19,10 @@
 #   %shminikoth_time%              Temps de règne du roi.
 #   %shminikoth_reward_countdown%  Temps restant avant la prochaine récompense.
 #
+# Plusieurs serveurs de jeu : la zone est dans le monde du spawn, hébergé par un seul Opale. Ne poser le plugin que
+# sur celui-là : le roi y est unique et la récompense n'est donnée qu'une fois. Rien à synchroniser, SHNetwork n'est
+# pas utilisé.
+#
 # ======================================================================== #
 
 # Zone du KOTH : deux coins au format monde,x,y,z et type de la plaque de pression qui désigne le roi.
