@@ -18,15 +18,20 @@ public class EventListener implements Listener {
     private final SHMiniKOTH plugin;
     private final KingManager kingManager;
     private final ZoneManager zoneManager;
-    // Lus une fois : ces événements (dégâts, durabilité) sont fréquents
-    private final boolean loseHealth;
-    private final boolean pvpEnabled;
-    private final boolean loseDurability;
+    // Lus une fois (et à chaque reload) : ces événements (dégâts, durabilité) sont fréquents
+    private volatile boolean loseHealth;
+    private volatile boolean pvpEnabled;
+    private volatile boolean loseDurability;
 
     public EventListener(SHMiniKOTH plugin, KingManager kingManager, ZoneManager zoneManager) {
         this.plugin = plugin;
         this.kingManager = kingManager;
         this.zoneManager = zoneManager;
+        reload();
+    }
+
+    /** Relit la section features de config.yml. */
+    void reload() {
         this.loseHealth = plugin.getConfig().getBoolean("features.lose_health", true);
         this.pvpEnabled = plugin.getConfig().getBoolean("features.pvp", true);
         this.loseDurability = plugin.getConfig().getBoolean("features.lose_durability", true);

@@ -5,10 +5,16 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 
 
@@ -23,6 +29,7 @@ public class SHMiniKOTH extends JavaPlugin {
     private volatile long lastRewardTimeMillis;
     private KingPlaceholderExpansion expansion;
     private Messages messages;
+    private EventListener eventListener;
 
     /** Fichier de SHLogs où sont écrites les récompenses du roi. */
     private static final String LOG_FILE = "recompenses";
@@ -35,8 +42,12 @@ public class SHMiniKOTH extends JavaPlugin {
         kingManager = new KingManager(this);
         zoneManager = new ZoneManager(this); // Doit être initialisé avant de l'utiliser dans les tâches
 
-        getServer().getPluginManager().registerEvents(new EventListener(this, kingManager, zoneManager), this);
-        getCommand("shminikoth").setExecutor(new CommandSHMiniKOTH(this, zoneManager));
+        eventListener = new EventListener(this, kingManager, zoneManager);
+        getServer().getPluginManager().registerEvents(eventListener, this);
+        CommandSHMiniKOTH command = new CommandSHMiniKOTH(this, zoneManager);
+        PluginCommand shminikoth = getCommand("shminikoth");
+        shminikoth.setExecutor(command);
+        shminikoth.setTabCompleter(command);
 
         startRewardTask();
         startCountdownSoundTask();
@@ -53,15 +64,64 @@ public class SHMiniKOTH extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (rewardTask != null) rewardTask.cancel();
-        if (countdownSoundTask != null) countdownSoundTask.cancel();
-        if (reignTask != null) reignTask.cancel();
+        cancelTasks();
         // L'expansion persiste chez PlaceholderAPI : on la retire pour ne pas garder l'ancienne instance du plugin
         if (expansion != null) {
             expansion.unregister();
             expansion = null;
         }
         instance = null;
+    }
+
+    private void cancelTasks() {
+        if (rewardTask != null) rewardTask.cancel();
+        if (countdownSoundTask != null) countdownSoundTask.cancel();
+        if (reignTask != null) reignTask.cancel();
+        rewardTask = null;
+        countdownSoundTask = null;
+        reignTask = null;
+    }
+
+    /**
+     * Relit config.yml et messages.yml, puis réapplique ce qui en dépend : zone, plaque, règles de la zone et les trois
+     * tâches (récompense, son du décompte, règne). Si l'un des fichiers est invalide, rien n'est appliqué : l'ancienne
+     * configuration reste en place et l'expéditeur reçoit le fichier et l'erreur. Le roi en cours n'est pas touché ;
+     * le décompte de la prochaine récompense repart de zéro.
+     *
+     * @return vrai si tout a été rechargé
+     */
+    public boolean reload(CommandSender sender) {
+        YamlConfiguration newMessages = parse(sender, "messages.yml");
+        YamlConfiguration newConfig = parse(sender, "config.yml");
+        if (newMessages == null || newConfig == null) {
+            return false;
+        }
+        reloadConfig();
+        messages.apply(newMessages);
+        zoneManager.loadZone();
+        eventListener.reload();
+        cancelTasks();
+        startRewardTask();
+        startCountdownSoundTask();
+        startReignTask();
+        return true;
+    }
+
+    private YamlConfiguration parse(CommandSender sender, String name) {
+        YamlConfiguration yaml = new YamlConfiguration();
+        try {
+            yaml.load(new File(getDataFolder(), name));
+            return yaml;
+        } catch (IOException | InvalidConfigurationException e) {
+            getLogger().severe("Rechargement annulé, " + name + " est invalide : " + e.getMessage());
+            String text = String.valueOf(e.getMessage()).strip();
+            int end = text.indexOf('\n');
+            String error = end < 0 ? text : text.substring(0, end).strip();
+            sender.sendMessage(messages.get("reload-failed",
+                "&7&l« &c&lSH &8&l» &7Rechargement &cannulé&7 : &c%file% &7est invalide (&c%error%&7). L'ancienne configuration reste active.",
+                "%file%", name, "%error%", error.length() > 160 ? error.substring(0, 160) + "..." : error));
+            return null;
+        }
     }
 
     public static SHMiniKOTH getInstance() {

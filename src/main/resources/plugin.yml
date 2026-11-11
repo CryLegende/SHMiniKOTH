@@ -9,11 +9,31 @@ softdepend:
 
 commands:
   shminikoth:
-    description: Commande de configuration du plugin SHMiniKOTH (définition de la zone et de la plaque)
-    usage: /<command> setpos1|setpos2|setplate <valeur>
-    permission: shminikoth.admin
+    description: Administration du plugin SHMiniKOTH (zone, plaque, rechargement, état)
+    usage: /<command> setpos1|setpos2|setplate <valeur>|reload|info
 
 permissions:
   shminikoth.admin:
-    description: Permet d'utiliser les commandes administratives de SHMiniKOTH.
+    description: Toutes les sous-commandes de /shminikoth.
+    default: op
+    children:
+      shminikoth.admin.setpos1: true
+      shminikoth.admin.setpos2: true
+      shminikoth.admin.setplate: true
+      shminikoth.admin.reload: true
+      shminikoth.admin.info: true
+  shminikoth.admin.setpos1:
+    description: Définir le premier coin de la zone (/shminikoth setpos1).
+    default: op
+  shminikoth.admin.setpos2:
+    description: Définir le second coin de la zone (/shminikoth setpos2).
+    default: op
+  shminikoth.admin.setplate:
+    description: Définir le type de plaque de pression (/shminikoth setplate).
+    default: op
+  shminikoth.admin.reload:
+    description: Recharger config.yml et messages.yml (/shminikoth reload).
+    default: op
+  shminikoth.admin.info:
+    description: Voir la zone, la plaque, le roi et la prochaine récompense (/shminikoth info).
     default: op

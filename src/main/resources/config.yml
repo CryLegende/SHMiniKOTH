@@ -6,13 +6,24 @@
 # de pression de la zone devient le roi et reçoit des récompenses à intervalle
 # régulier. Les textes envoyés aux joueurs sont dans messages.yml.
 #
-# Commandes :
-#   /shminikoth setpos1                    Définit le premier coin de la zone à votre position.
-#   /shminikoth setpos2                    Définit le second coin de la zone à votre position.
+# Commandes (racine /shminikoth, pas d'alias) :
+#   /shminikoth setpos1                    Définit le premier coin de la zone à votre position (joueur).
+#   /shminikoth setpos2                    Définit le second coin de la zone à votre position (joueur).
 #   /shminikoth setplate <type_de_plaque>  Définit le type de plaque de pression.
+#   /shminikoth reload                     Recharge config.yml et messages.yml.
+#   /shminikoth info                       Zone, plaque, roi en cours et prochaine récompense.
 #
-# Permissions :
-#   shminikoth.admin   Utiliser /shminikoth (par défaut : op).
+# Permissions (op par défaut) :
+#   shminikoth.admin           Toutes les sous-commandes ci-dessous.
+#   shminikoth.admin.setpos1   /shminikoth setpos1
+#   shminikoth.admin.setpos2   /shminikoth setpos2
+#   shminikoth.admin.setplate  /shminikoth setplate
+#   shminikoth.admin.reload    /shminikoth reload
+#   shminikoth.admin.info      /shminikoth info
+#
+# Un reload relit config.yml et messages.yml (rien n'est appliqué si l'un des deux est invalide), recharge la zone, la
+# plaque et les règles, puis relance les récompenses, le son du décompte et les commandes de règne avec les nouveaux
+# réglages. Le roi en cours est gardé, le décompte de la prochaine récompense repart de zéro.
 #
 # Placeholders (PlaceholderAPI) :
 #   %shminikoth_king%              Nom du roi.

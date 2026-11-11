@@ -13,11 +13,24 @@ new_king: "&7&l« &e&lSH &8&l» &7&e%player% &7est le nouveau roi du spawn !"
 king_lost: "&7&l« &6&lSH &8&l» &7Vous n'êtes plus le roi du spawn, &6%player% &7vous a volé votre place !"
 
 # --- /shminikoth ---
+# %subcommands% : sous-commandes que l'expéditeur peut utiliser, séparées par « | ».
 console_not_allowed: "&7&l« &c&lSH &8&l» &7Cette commande est uniquement utilisable par un &cjoueur&7."
 no_permission: "&7&l« &c&lSH &8&l» &7Vous n'avez pas la &cpermission &7d'utiliser cette commande."
-usage: "&7&l« &e&lSH &8&l» &7Usage : &e/shminikoth setpos1|setpos2|setplate <valeur>&7."
+usage-list: "&7&l« &e&lSH &8&l» &7Usage : &e/shminikoth %subcommands%&7."
 usage_setplate: "&7&l« &e&lSH &8&l» &7Usage : &e/shminikoth setplate <type_de_plaque>&7."
 pos1_saved: "&7&l« &a&lSH &8&l» &7Position &a1 &7sauvegardée."
 pos2_saved: "&7&l« &a&lSH &8&l» &7Position &a2 &7sauvegardée."
 plate_set: "&7&l« &a&lSH &8&l» &7Type de plaque défini sur &a%plate%&7."
-unknown_command: "&7&l« &c&lSH &8&l» &7Commande &cinconnue&7."
+reload-done: "&7&l« &a&lSH &8&l» &7Configuration &arechargée&7. Le décompte de la prochaine récompense repart de zéro."
+reload-failed: "&7&l« &c&lSH &8&l» &7Rechargement &cannulé&7 : &c%file% &7est invalide (&c%error%&7). L'ancienne configuration reste active."
+
+# --- /shminikoth info ---
+# Variables : %pos1%, %pos2%, %world%, %state%, %plate%, %king%, %time%, %interval%.
+info-header: "&7&l« &e&lSH &8&l» &7Roi du spawn :"
+info-zone: "&8• &7Zone : &e%pos1% &7à &e%pos2%"
+info-world: "&8• &7Monde : &e%world% &7(%state%&7)"
+info-no-zone: "&8• &7Zone : &cnon définie &7(setpos1 et setpos2)"
+info-plate: "&8• &7Plaque : &e%plate%"
+info-king: "&8• &7Roi : &e%king% &7depuis &e%time%"
+info-no-king: "&8• &7Roi : &eaucun"
+info-reward: "&8• &7Prochaine récompense : &e%time% &7(toutes les &e%interval% &7s)"

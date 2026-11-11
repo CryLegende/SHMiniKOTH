@@ -120,6 +120,30 @@ public class ZoneManager {
         saveZone();
     }
 
+    /** Monde de la zone (nom), ou null si la zone n'est pas définie. */
+    public String getWorldName() {
+        return pos1 == null ? null : pos1.world();
+    }
+
+    /** Vrai si les deux coins sont définis. */
+    public boolean isDefined() {
+        return pos1 != null && pos2 != null;
+    }
+
+    /** Coin 1 sous la forme « x, y, z » arrondie, ou null. */
+    public String describePos1() {
+        return pos1 == null ? null : describe(pos1);
+    }
+
+    /** Coin 2 sous la forme « x, y, z » arrondie, ou null. */
+    public String describePos2() {
+        return pos2 == null ? null : describe(pos2);
+    }
+
+    private static String describe(Pos pos) {
+        return String.format(java.util.Locale.ROOT, "%.1f, %.1f, %.1f", pos.x(), pos.y(), pos.z());
+    }
+
     public Location getPos1() {
         return pos1 == null ? null : pos1.toLocation();
     }

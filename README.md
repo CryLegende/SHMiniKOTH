@@ -26,13 +26,24 @@ Utilisé sur : **Opale**.
 
 | Commande | Alias | Description | Permission |
 |---|---|---|---|
-| `/shminikoth` | — | Commande de configuration du plugin SHMiniKOTH (définition de la zone et de la plaque) | `shminikoth.admin` |
+| `/shminikoth setpos1` | — | Définit le premier coin de la zone à votre position (joueur) | `shminikoth.admin.setpos1` |
+| `/shminikoth setpos2` | — | Définit le second coin de la zone à votre position (joueur) | `shminikoth.admin.setpos2` |
+| `/shminikoth setplate <type_de_plaque>` | — | Définit le type de plaque de pression (console comprise) | `shminikoth.admin.setplate` |
+| `/shminikoth reload` | — | Recharge `config.yml` et `messages.yml`, la zone et les tâches (récompense, son, règne) | `shminikoth.admin.reload` |
+| `/shminikoth info` | — | Zone, plaque, roi en cours et prochaine récompense | `shminikoth.admin.info` |
+
+`/shminikoth` sans argument donne une ligne d'usage limitée aux sous-commandes autorisées. Le reload ne change pas le roi en cours ; le décompte de la prochaine récompense repart de zéro. Si un fichier est invalide, rien n'est appliqué et le message donne le fichier et l'erreur.
 
 ## Permissions
 
 | Permission | Description | Par défaut |
 |---|---|---|
-| `shminikoth.admin` | Permet d'utiliser les commandes administratives de SHMiniKOTH. | `op` |
+| `shminikoth.admin` | Toutes les sous-commandes de `/shminikoth` | `op` |
+| `shminikoth.admin.setpos1` | `/shminikoth setpos1` | `op` |
+| `shminikoth.admin.setpos2` | `/shminikoth setpos2` | `op` |
+| `shminikoth.admin.setplate` | `/shminikoth setplate` | `op` |
+| `shminikoth.admin.reload` | `/shminikoth reload` | `op` |
+| `shminikoth.admin.info` | `/shminikoth info` | `op` |
 
 ## Logs
 

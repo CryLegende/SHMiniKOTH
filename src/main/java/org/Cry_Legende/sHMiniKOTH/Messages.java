@@ -10,7 +10,7 @@ import java.io.File;
 /** Textes envoyés aux joueurs, lus dans messages.yml. */
 public class Messages {
 
-    private final FileConfiguration config;
+    private volatile FileConfiguration config;
 
     public Messages(SHMiniKOTH plugin) {
         File file = new File(plugin.getDataFolder(), "messages.yml");
@@ -18,6 +18,11 @@ public class Messages {
             plugin.saveResource("messages.yml", false);
         }
         this.config = YamlConfiguration.loadConfiguration(file);
+    }
+
+    /** Remplace les textes par ceux d'un messages.yml déjà lu et validé (rechargement). */
+    void apply(FileConfiguration loaded) {
+        this.config = loaded;
     }
 
     /**
