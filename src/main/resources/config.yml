@@ -30,7 +30,7 @@
 #   %shminikoth_time%              Temps de règne du roi.
 #   %shminikoth_reward_countdown%  Temps restant avant la prochaine récompense.
 #
-# Plusieurs serveurs de jeu : la zone est dans le monde du spawn, hébergé par un seul Opale. Ne poser le plugin que
+# Plusieurs serveurs de jeu : la zone est dans le monde du spawn, hébergé par un seul serveur de jeu. Ne poser le plugin que
 # sur celui-là : le roi y est unique et la récompense n'est donnée qu'une fois. Rien à synchroniser, SHNetwork n'est
 # pas utilisé.
 #
@@ -38,9 +38,9 @@
 
 # Zone du KOTH : deux coins au format monde,x,y,z et type de la plaque de pression qui désigne le roi.
 zone:
-  pos1: spawn,-17.698222597119873,71.50374533165873,32.19653921740691
-  pos2: spawn,-9.45997789683911,78.62912365274993,40.54349821766487
-  pressure_plate: POLISHED_BLACKSTONE_PRESSURE_PLATE
+  pos1: world,-5,70,-5
+  pos2: world,5,75,5
+  pressure_plate: STONE_PRESSURE_PLATE
 
 # Règles appliquées dans la zone.
 features:
@@ -55,14 +55,13 @@ features:
 rewards:
   # Commandes console exécutées à chaque récompense (%player% = le roi).
   commands:
-    - eco give %player% 100
-    - sm %player% &7&o(Récompense de roi du spawn)
-    - rc MiniKOTHdeco %player%
+    - give %player% diamond 1
+    - 'tellraw %player% {"text":"(Récompense de roi du spawn)","color":"gray","italic":true}'
   # Secondes entre deux récompenses.
   interval: 60
   # Ligne écrite dans SHLogs (fichier recompenses) à chaque récompense donnée.
   # Variable : %player% (le roi). À accorder avec les commandes ci-dessus.
-  log_format: "%player% -> récompense du roi du spawn (100 SHCoins)"
+  log_format: "%player% -> récompense du roi du spawn (1 diamant)"
   # Son joué au centre de la zone avant chaque récompense.
   countdown_sound:
     enabled: true
@@ -73,12 +72,12 @@ rewards:
     seconds_trigger: 3
 
 # Commandes console exécutées à chaque seconde de règne (%player% = le roi). Liste vide = désactivé.
-# Sert au mini-tournoi « Roi du spawn » de SHFastTournament (type CUSTOM, objectif ROI) : 1 point par seconde.
+# Sert par exemple à compter 1 point par seconde de règne dans un objectif de scoreboard.
 # require-in-zone : la seconde ne compte que si le roi est dans la zone (il garde la couronne en partant).
 reign:
   require-in-zone: true
   commands:
-    - shfasttournament:tournament custom ROI %player%
+    - scoreboard players add %player% roi 1
 
 # Valeurs renvoyées par les placeholders.
 placeholder:

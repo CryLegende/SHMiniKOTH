@@ -61,14 +61,14 @@ plugins/SHMiniKOTH/
 
 ## Plusieurs serveurs de jeu
 
-La zone du roi est dans le monde du spawn (`zone.pos1` et `zone.pos2`). Quand les joueurs sont répartis sur plusieurs Opale, ce monde n'est hébergé que par un seul d'entre eux, celui du spawn, de l'arène et des événements : un joueur qui y entre depuis un autre Opale est envoyé sur celui-là. Le plugin ne doit donc tourner que sur cet Opale :
+La zone du roi est dans le monde du spawn (`zone.pos1` et `zone.pos2`). Quand les joueurs sont répartis sur plusieurs serveurs de jeu, ce monde n'est hébergé que par un seul d'entre eux, celui du spawn : un joueur qui y entre depuis un autre serveur est envoyé sur celui-là. Le plugin ne doit donc tourner que sur ce serveur :
 
 - le roi est gardé en mémoire et n'existe que là où se trouve la plaque : un seul roi, un seul `rewards.commands` à l'intervalle choisi, aucune récompense doublée ;
-- un roi qui change d'Opale perd la couronne, comme à sa déconnexion ;
+- un roi qui change de serveur perd la couronne, comme à sa déconnexion ;
 - rien n'est partagé, il n'y a ni base ni bus à configurer et SHNetwork n'est pas utilisé ;
-- les placeholders `%shminikoth_king%`, `%shminikoth_time%` et `%shminikoth_reward_countdown%` n'existent que sur cet Opale, comme les hologrammes du spawn qui les affichent.
+- les placeholders `%shminikoth_king%`, `%shminikoth_time%` et `%shminikoth_reward_countdown%` n'existent que sur ce serveur, comme les hologrammes du spawn qui les affichent.
 
-Si la zone était un jour placée dans un monde jouable sur plusieurs Opale, il faudrait un mode réseau : un seul roi et un seul serveur qui paie la récompense.
+Si la zone était un jour placée dans un monde jouable sur plusieurs serveurs, il faudrait un mode réseau : un seul roi et un seul serveur qui paie la récompense.
 
 ## Compilation
 
