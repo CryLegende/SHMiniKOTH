@@ -20,7 +20,7 @@ Utilisé sur : **Opale**.
 
 ## Dépendances
 
-- Optionnelles : `PlaceholderAPI`, `SHLogs`
+- Optionnelles : `PlaceholderAPI`, `SHLogs`, `Vault` (pour `rewards.money`)
 
 ## Commandes
 
@@ -47,7 +47,7 @@ Utilisé sur : **Opale**.
 
 ## Logs
 
-Chaque récompense donnée au roi est écrite dans SHLogs, fichier `recompenses`. Le texte de la ligne se règle avec `rewards.log_format`. Sans SHLogs, la ligne est écrite dans la console.
+Les SHCoins de la récompense (`rewards.money`) sont versés directement par Vault, sans commande console (rien dans la console) ; `rewards.commands` reste pour le reste (message, objets). Chaque récompense donnée au roi est écrite dans SHLogs, fichier `recompenses`. Le texte de la ligne se règle avec `rewards.log_format`. Sans SHLogs, la ligne est écrite dans la console.
 
 ## Configuration
 

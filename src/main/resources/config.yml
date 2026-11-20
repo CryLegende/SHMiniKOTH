@@ -53,6 +53,9 @@ features:
 
 # Récompense du roi, donnée à intervalle régulier tant qu'il est roi.
 rewards:
+  # SHCoins versés au roi à chaque récompense, directement par Vault (sans commande console ni ligne dans la console).
+  # 0 = rien.
+  money: 0
   # Commandes console exécutées à chaque récompense (%player% = le roi).
   commands:
     - give %player% diamond 1

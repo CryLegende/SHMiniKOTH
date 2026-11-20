@@ -106,7 +106,6 @@ public class ZoneManager {
         Material mat = Material.matchMaterial(this.pressurePlateTypeString);
         if (mat != null && mat.name().contains("PRESSURE_PLATE")) {
             this.pressurePlateMaterial = mat;
-            plugin.getLogger().info("Type de plaque de pression défini sur: " + this.pressurePlateMaterial.name());
         } else {
             this.pressurePlateMaterial = Material.STONE_PRESSURE_PLATE; // Fallback
             plugin.getLogger().warning("Type de plaque de pression invalide: " + pressurePlateType + ". Utilisation de STONE_PRESSURE_PLATE par défaut.");

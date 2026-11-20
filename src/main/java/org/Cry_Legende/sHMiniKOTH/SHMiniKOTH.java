@@ -56,7 +56,6 @@ public class SHMiniKOTH extends JavaPlugin {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             expansion = new KingPlaceholderExpansion(this, kingManager);
             expansion.register();
-            getLogger().info("PlaceholderAPI détecté, expansion enregistrée.");
         } else {
             getLogger().warning("PlaceholderAPI non trouvé. Les placeholders ne fonctionneront pas.");
         }
@@ -152,7 +151,7 @@ public class SHMiniKOTH extends JavaPlugin {
         rewardTask = Bukkit.getScheduler().runTaskTimer(this, () -> {
             Player king = kingManager.getCurrentKing();
             if (king != null) {
-                boolean given = false;
+                boolean given = payMoney(king);
                 for (String cmd : getConfig().getStringList("rewards.commands")) {
                     String command = cmd.replace("%player%", king.getName());
                     if (Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)) {
@@ -171,6 +170,29 @@ public class SHMiniKOTH extends JavaPlugin {
             // et que l'intervalle complet soit écoulé depuis la *dernière récompense effective*.
         }, intervalTicks, intervalTicks);
     }
+
+    /**
+     * rewards.money versé par Vault, sans passer par une commande console (une par minute tant qu'il y a un roi).
+     * true si quelque chose a été versé.
+     */
+    private boolean payMoney(Player king) {
+        double money = getConfig().getDouble("rewards.money", 0);
+        if (money <= 0) {
+            return false;
+        }
+        org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> provider = Bukkit.getPluginManager().isPluginEnabled("Vault")
+                ? Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class) : null;
+        if (provider == null) {
+            if (!missingEconomyWarned) {
+                missingEconomyWarned = true;
+                getLogger().warning("rewards.money vaut " + money + " mais aucune économie Vault n'est disponible : rien n'est versé.");
+            }
+            return false;
+        }
+        return provider.getProvider().depositPlayer(king, money).transactionSuccess();
+    }
+
+    private boolean missingEconomyWarned;
 
     /**
      * Commandes console exécutées à chaque seconde de règne (section {@code reign}), par exemple pour compter
